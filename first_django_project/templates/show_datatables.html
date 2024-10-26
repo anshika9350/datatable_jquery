@@ -1,0 +1,59 @@
+{% load static %}
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>User List</title>
+    <meta name="description" content="User management">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Local DataTables CSS -->
+    <link rel="stylesheet" href="{% static 'css/dataTables.dataTables.min.css' %}">
+    <!-- Local Bootstrap CSS (if needed) -->
+    {% comment %} <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}"> {% endcomment %}
+
+    <!-- Local jQuery -->
+    <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+    <!-- Local DataTables JS -->
+    <script src="{% static 'js/dataTables.min.js' %}"></script>
+</head>
+<body>
+
+    <div class="container mt-5">
+        <h1>User List</h1>
+        <table id="userTable" class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                    <tr>
+                        <td>{{ result.0}}</td>
+                        <td>{{ result.1 }}</td>
+                        <td>{{ result.2 }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center">No users found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#userTable').DataTable();  
+        });
+    </script> 
+</body>
+</html>

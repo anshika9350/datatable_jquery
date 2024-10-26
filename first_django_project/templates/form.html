@@ -1,0 +1,138 @@
+{% load static %}
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>User Management</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'css/dataTables.dataTables.min.css' %}"/>
+    <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'js/dataTables.min.js' %}"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-4">
+                <!-- Insert Form -->
+                <form method="post" id="insertForm">
+                    {% csrf_token %}
+                    <label for="user_id">User ID:</label><br />
+                    <input type="number" id="user_id" name="user_id" required /><br />
+                    <label for="name">Name:</label><br />
+                    <input type="text" id="name" name="name" required /><br />
+                    <label for="email">Email:</label><br />
+                    <input type="email" id="email" name="email" required /><br />
+                    <label for="category">Category:</label><br />
+                    <input type="text" id="category" name="category" required /><br /><br />
+                    <input type="submit" value="Insert" />
+                </form><br />
+
+                <!-- Update Form -->
+                <form method="post" id="updateForm">
+                    {% csrf_token %}
+                    <label for="new_category">Update Category:</label><br/>
+                    <input type="text" id="new_category" name="new_category" required/><br/>
+                    <label for="user_id2">Where User ID:</label><br/>
+                    <input type="number" id="user_id2" name="user_id2" required/><br/>
+                    <input type="submit" value="Update"/>
+                </form>
+            </div>
+
+            <div class="col-8">
+                <div class="container mt-5">
+                    <table id="userTable" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in data %}
+                            <tr>
+                                <td>{{ user.0 }}</td>
+                                <td>{{ user.1 }}</td>
+                                <td>{{ user.2 }}</td>
+                                <td>{{ user.3 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No users found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>   
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#userTable').DataTable();  
+
+            // Insert Data
+            $('#insertForm').on('submit', function(event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                $.ajax({
+                    url: '/insert/', // Update with your insert view URL
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        // Optionally handle success (e.g., show a success message)
+                        $('#userTable').DataTable().row.add([
+                            response.user_id,  // Assuming the server returns the new user data
+                            response.name,
+                            response.email,
+                            response.category
+                        ]).draw(); // Add the new row to the DataTable
+                        
+                        // Clear form inputs
+                        $('#insertForm')[0].reset();
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle error (e.g., display error message)
+                        console.error('Insert error:', error);
+                    }
+                });
+            });
+
+            // Update Data
+            $('#updateForm').on('submit', function(event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                $.ajax({
+                    url: '/update/', // Update with your update view URL
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        // Optionally handle success (e.g., show a success message)
+                        // Update the DataTable with new category data
+                        $('#userTable').DataTable().rows().every(function() {
+                            var data = this.data();
+                            if (data[0] == response.user_id2) { // Assuming user_id2 is unique
+                                data[3] = response.new_category; // Update category
+                                this.data(data).draw();
+                            }
+                        });
+
+                        // Clear form inputs
+                        $('#updateForm')[0].reset();
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle error (e.g., display error message)
+                        console.error('Update error:', error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
